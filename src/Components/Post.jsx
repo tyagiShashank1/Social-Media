@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { PostListContext } from "../store/post-list-store.jsx";
 import { MdDeleteSweep } from "react-icons/md";
-export function Post({ id, title, desc, tags, reactions }) {
+export function Post({ id, title, body, tags, reactions }) {
   const { deletePost } = useContext(PostListContext);
   return (
     <>
@@ -19,7 +19,7 @@ export function Post({ id, title, desc, tags, reactions }) {
               <span className="visually-hidden">unread messages</span>
             </span>
           </h5>
-          <p className="card-text">{desc}</p>
+          <p className="card-text">{body}</p>
           {tags.map((item, index) => {
             return (
               <span key={index} className="badge text-bg-primary hastag">

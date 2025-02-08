@@ -3,26 +3,7 @@ import { useReducer } from "react";
 import { createContext } from "react";
 
 //DECLARING DEFAULT POSTLIST
-const DEFAULT_POST_LIST = [
-  {
-    id: 1,
-    postTitle: "Going to Mumbai",
-    postPara:
-      "Hi Friends, Ia m going to Mumbai for my vacation. Hope to enjoy a lot. Peace out",
-    reactions: 2,
-    userId: "user-9",
-    tags: ["Vacation", "Mumbai", "Enjoying"],
-  },
-  {
-    id: 2,
-    postTitle: "Going to Rajasthan",
-    postPara:
-      "Hi Friends, Ia m going to Rajasthan for my vacation. Hope to enjoy a lot. Peace out",
-    reactions: 12,
-    userId: "user-12",
-    tags: ["Vacation", "Rajasthan", "Enjoying"],
-  },
-];
+const DEFAULT_POST_LIST = [];
 
 //JUST A STRUCTURE THAT THESE DATA/FUNCTION WILL BE AVAILABLE FOR ALL THE CHILDREN OF BELOW COMPONENT
 export const PostListContext = createContext({
@@ -34,12 +15,18 @@ export const PostListContext = createContext({
 //reducer function definition outside component
 const postListReducer = (currPostList, action) => {
   let updatedList = currPostList;
-  if (action.type === "NEW_ITEM") {
+  if (action.type === "BULK_ADD") {
+    let newList = action.payload.data.map(({ reactions, ...rest }) => ({
+      ...rest,
+      reactions: reactions.likes,
+    }));
+    updatedList = [...currPostList, ...newList];
+  } else if (action.type === "NEW_ITEM") {
     updatedList = [
       {
         id: action.payload.id,
-        postTitle: action.payload.title,
-        postPara: action.payload.desc,
+        title: action.payload.title,
+        body: action.payload.body,
         reactions: action.payload.reactions,
         userId: action.payload.userId,
         tags: action.payload.tags,
@@ -62,16 +49,27 @@ export function PostListProvider({ children }) {
   );
 
   //add post function
-  const addPost = (userId, title, desc, reactions, tags) => {
+  const addPost = (userId, title, body, reactions, tags) => {
     const actionItem = {
       type: "NEW_ITEM",
       payload: {
         id: Date.now(),
         title: title,
-        desc: desc,
+        body: body,
         reactions: reactions,
         userId: userId,
         tags: tags,
+      },
+    };
+    dispatchPostList(actionItem);
+  };
+
+  //add intital posts in bulk function
+  const addPosts = (data) => {
+    const actionItem = {
+      type: "BULK_ADD",
+      payload: {
+        data: data,
       },
     };
     dispatchPostList(actionItem);
@@ -87,7 +85,9 @@ export function PostListProvider({ children }) {
   };
 
   return (
-    <PostListContext.Provider value={{ postList, addPost, deletePost }}>
+    <PostListContext.Provider
+      value={{ postList, addPost, deletePost, addPosts }}
+    >
       {children}
     </PostListContext.Provider>
   );

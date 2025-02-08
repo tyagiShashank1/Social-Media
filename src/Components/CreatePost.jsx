@@ -1,7 +1,6 @@
 import { useContext } from "react";
 import { PostListContext } from "../store/post-list-store.jsx";
 import { useRef } from "react";
-import { useState } from "react";
 export function CreatePost() {
   const { addPost } = useContext(PostListContext);
 
@@ -59,7 +58,7 @@ export function CreatePost() {
           </label>
           <input
             required
-            type="text"
+            type="number"
             className="form-control"
             id="reactions"
             ref={reactionsValue}
