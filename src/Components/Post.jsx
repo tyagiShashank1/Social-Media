@@ -10,6 +10,9 @@ export function Post({ id, title, body, tags, reactions }) {
           <h5 className="card-title">
             {title}
             <span
+              data-bs-toggle="tooltip"
+              data-bs-placement="top"
+              title="Delete this Post"
               className=" btn position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
               onClick={() => {
                 deletePost(id);

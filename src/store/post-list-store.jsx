@@ -1,4 +1,4 @@
-import { useReducer } from "react";
+import { useReducer, useState, useEffect } from "react";
 
 import { createContext } from "react";
 
@@ -10,6 +10,7 @@ export const PostListContext = createContext({
   postList: [],
   addPost: () => {},
   deletePost: () => {},
+  loading: false,
 });
 
 //reducer function definition outside component
@@ -22,18 +23,7 @@ const postListReducer = (currPostList, action) => {
     }));
     updatedList = [...currPostList, ...newList];
   } else if (action.type === "NEW_ITEM") {
-    updatedList = [
-      {
-        id: action.payload.id,
-        title: action.payload.title,
-        body: action.payload.body,
-        reactions: action.payload.reactions,
-        userId: action.payload.userId,
-        tags: action.payload.tags,
-      },
-
-      ...currPostList,
-    ];
+    updatedList = [action.payload, ...currPostList];
   } else if (action.type === "DELETE_ITEM") {
     updatedList = currPostList.filter((item) => item.id !== action.payload.id);
   }
@@ -48,18 +38,13 @@ export function PostListProvider({ children }) {
     DEFAULT_POST_LIST
   );
 
+  const [loading, setLoading] = useState(false);
+
   //add post function
-  const addPost = (userId, title, body, reactions, tags) => {
+  const addPost = (post) => {
     const actionItem = {
       type: "NEW_ITEM",
-      payload: {
-        id: Date.now(),
-        title: title,
-        body: body,
-        reactions: reactions,
-        userId: userId,
-        tags: tags,
-      },
+      payload: post,
     };
     dispatchPostList(actionItem);
   };
@@ -84,9 +69,28 @@ export function PostListProvider({ children }) {
     dispatchPostList(actionItem);
   };
 
+  //USE EFFECT
+  useEffect(() => {
+    setLoading(true);
+    const controller = new AbortController();
+    const signal = controller.signal;
+    fetch("https://dummyjson.com/posts", { signal })
+      .then((res) => res.json())
+      .then((data) => {
+        addPosts(data.posts);
+        setLoading(false);
+      });
+    return function () {
+      console.log("Going");
+      if (!signal.aborted) {
+        controller.abort(); // Only abort if the request is still pending
+      }
+    };
+  }, []);
+
   return (
     <PostListContext.Provider
-      value={{ postList, addPost, deletePost, addPosts }}
+      value={{ postList, addPost, deletePost, loading }}
     >
       {children}
     </PostListContext.Provider>
